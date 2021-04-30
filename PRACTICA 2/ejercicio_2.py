@@ -18,7 +18,7 @@ def main():
 		 ((abs(df['lon']) - longitud_sid_campeador) >= -0.05) &
 		 ((abs(df['lon']) - longitud_sid_campeador) <= 0.05)]
 
-	centro_capital_df.plot(kind = 'scatter', x = 'lat', y = 'lon')
+	centro_capital_df.plot(kind = 'scatter', x = 'lat', y = 'lon', s = 4)
 	plt.show()
 	
 

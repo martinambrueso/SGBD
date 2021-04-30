@@ -26,10 +26,13 @@ def main():
 	
 	departamentes_capital_df = df[(df['state_name'] == 'Capital Federal') & (df['property_type'] == 'apartment')]
 	dos_ambientes_df = departamentes_capital_df[departamentes_capital_df['rooms'] == 2]
-	precio_total = dos_ambientes_df['price_aprox_local_currency'].sum()
+	dos_ambientes_filtrado = dos_ambientes_df.dropna(subset=['price_aprox_usd'])
+	#price_aprox_usd
+	print("Valor medio de deptos 2 ambientes: {:.2f}".format(dos_ambientes_filtrado['price_aprox_usd'].mean()))
+	#precio_total = dos_ambientes_df['price_aprox_usd'].sum()
 
-	valorMedio = precio_total/departamentes_capital_df.size
-	print("Valor medio de deptos 2 ambientes: {:.2f}".format(valorMedio))
+	#valorMedio = precio_total/departamentes_capital_df.size
+	#print("Valor medio de deptos 2 ambientes: {:.2f}".format(valorMedio))
 
 	generarGráficoDeBarrasPorAmbientes(departamentes_capital_df)
 	generarGráficoDeBarrasHorizontal(dos_ambientes_df)
