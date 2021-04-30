@@ -11,9 +11,7 @@ def generarGráficoDeBarrasPorAmbientes(departamentes_capital_df):
 	
 	agrupado_por_ambiente = filtrado_outliers.value_counts(['rooms']).reset_index(name='counts')
 	print(agrupado_por_ambiente)
-	
-	#print(agrupado_por_ambiente)
-	
+		
 	agrupado_por_ambiente.plot(kind = 'bar', x='rooms', y = 'counts')
 	plt.show()
 	
