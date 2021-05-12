@@ -113,7 +113,7 @@ ALTER TABLE public.stats
 
 
 
-INSERT INTO tblA
+INSERT INTO public.stats
 select cy.code, count(cl.language), sum(cy.population) from country cy
 inner join countrylanguage cl on cl.countrycode = cy.code
 where cy.continent = 'Oceania'
