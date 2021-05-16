@@ -41,6 +41,7 @@ where continent = (select continent from country where indepyear = (select min(i
 -- Nomber de los continentes que no pertenecen al conjunto de los continentes más pobres
 -- utilizando gnp, utilizando alguna condicion
 
+XXXXXXX
 
 -- Joins
 -- Paises y lenguas de los paises de Oceania
@@ -51,13 +52,13 @@ where cy.continent = 'Oceania';
 -- Los Paises y la cantidad de lenguas de los que se habla más de una lengua. Ordenado de forma descendente
 select cy.name, count(cl.language) as cantidad_de_lenguas from country cy
 inner join countrylanguage cl on cl.countrycode = cy.code
--- where cy.continent = 'Oceania'
 group by cy.name
 having count(cl.language) > 1
 order by cantidad_de_lenguas desc;
 
 -- Lenguas que se hablan en el continente más pobre, sin contar antarctica
 -- avg de gnp 
+XXXXXX
 select continent, sum(gnp) as total_gnp from country 
 where continent != 'Antarctica' 
 group by continent order by total_gnp asc limit 1;
@@ -72,12 +73,10 @@ where cy.continent = 'Oceania';
 select name, population from country;
 
 -- Suma de las poblaciones segun la tabla city y calcular el porcentaje de la población urbana y ordenar por porcentaje descendente
--- Como se sabe la ciudad si es urbana o no?
 select cy.name, sum(ct.population) as poblacion, 
 (sum(ct.population) * 100) / sum(cy.population) as porcentaje
 from country cy
 inner join city ct on ct.countrycode = cy.code
-where cy.name = 'China'
 group by cy.name order by porcentaje desc;
 
 -- Analizar los scripts de creacion de las tres tablas (country, city, countrylanguage) y responder a las siguientes preguntas:
@@ -118,10 +117,36 @@ ALTER TABLE public.stats
 
 select * from stats;
 
--- Cambiar por 1 insert y 1 update
+-- se inserta la cantidad de lenguas
 INSERT INTO public.stats
-select cy.code, count(cl.language), sum(ct.population) from country cy
+select cy.code, count(cl.language), 0 from country cy
 inner join countrylanguage cl on cl.countrycode = cy.code
-inner join city ct on ct.countrycode = cy.code
 group by cy.code;
 
+-- se hace el update para la cantidad de población del as ciudades
+update public.stats st
+set pop_urbana = sub.total_population
+from (
+select cy.code, sum(ct.population) as total_population
+from country cy
+inner join city ct on ct.countrycode = cy.code
+group by cy.code 
+) sub where st.countrycode = sub.code;
+
+
+
+
+-- Tabla sitio
+CREATE TABLE public.sitio
+(
+    id bigint NOT NULL,
+    entidad varchar NULL,
+    tipo_entidad varchar NULL,
+	pais varchar NULL,
+	countrycode character(4) NULL,
+    CONSTRAINT sitio_pkey PRIMARY KEY (id),
+    CONSTRAINT countrycode FOREIGN KEY (countrycode)
+        REFERENCES public.country (code) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+)
