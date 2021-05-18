@@ -150,3 +150,24 @@ CREATE TABLE public.sitio
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
 )
+
+
+
+-- Ejercicio 5
+select * from sitio s1, sitio s2 where 
+s1.countrycode = s2.countrycode
+and s1.entidad like 'a%' and s2.entidad like 'b%'
+limit 100;
+
+EXPLAIN select * from sitio s1, sitio s2 where 
+s1.countrycode = s2.countrycode
+and s1.entidad like 'a%' and s2.entidad like 'b%'
+limit 100;
+
+CREATE INDEX sitio_countrycode_idx
+ON sitio (countrycode);
+
+EXPLAIN select * from sitio s1, sitio s2 where 
+s1.countrycode = s2.countrycode
+and s1.entidad like 'a%' and s2.entidad like 'b%'
+limit 100;
