@@ -39,9 +39,10 @@ where continent = (select continent from country where indepyear = (select min(i
 
 
 -- Nomber de los continentes que no pertenecen al conjunto de los continentes más pobres
--- utilizando gnp, utilizando alguna condicion
 
-XXXXXXX
+select distinct(cy.continent) from country cy 
+join (select continent, avg(gnp) as gnp_promedio from country group by continent order by gnp_promedio desc limit 4)
+ sub_country on sub_country.continent = cy.continent;
 
 -- Joins
 -- Paises y lenguas de los paises de Oceania
@@ -58,14 +59,12 @@ order by cantidad_de_lenguas desc;
 
 -- Lenguas que se hablan en el continente más pobre, sin contar antarctica
 -- avg de gnp 
-XXXXXX
-select continent, sum(gnp) as total_gnp from country 
-where continent != 'Antarctica' 
-group by continent order by total_gnp asc limit 1;
-
-select cl.language from country cy
-inner join countrylanguage cl on cl.countrycode = cy.code
-where cy.continent = 'Oceania';
+select cy.continent, count(cl.language) as cantidad_de_lenguas from country cy 
+join (select continent, avg(gnp) as gnp_promedio from country 
+      where continent != 'Antarctica' group by continent order by gnp_promedio asc limit 1)
+ sub_country on sub_country.continent = cy.continent
+ inner join countrylanguage cl on cl.countrycode = cy.code
+ group by cy.continent;
 
 
 -- Nombre de los paises y sus respectivas poblaciones calculados segun:
