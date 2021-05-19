@@ -1,10 +1,10 @@
 import csv
 import psycopg2
 
-hostname = 'localhost'
+hostname = '192.168.1.50'
 username = 'postgres'
-password = 'admin'
-database = 'world'
+password = 'docker'
+database = 'postgres'
 
 def buscarCodigos(conexion, codigosMap):
 	cur = conexion.cursor()
@@ -18,10 +18,10 @@ def procesarArchivo(conexion, codigosMap):
 	reader = csv.reader(csvFile, delimiter=",")
 	line = next(reader, None)
 	while line:	
-		processLine(line, conexion, codigosMap)
+		procesarLine(line, conexion, codigosMap)
 		line = next(reader, None)
 
-def processLine(line, conexion, codigosMap):
+def procesarLine(line, conexion, codigosMap):
 	id, dominio = line
 	splitDominio = dominio.split(r'.')
 	insertQuery = ""

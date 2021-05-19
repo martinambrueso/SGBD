@@ -170,3 +170,29 @@ EXPLAIN select * from sitio s1, sitio s2 where
 s1.countrycode = s2.countrycode
 and s1.entidad like 'a%' and s2.entidad like 'b%'
 limit 100;
+
+-- SIN INDICE
+
+--Limit  (cost=1000.00..3848.75 rows=100 width=70)--
+--  ->  Nested Loop  (cost=1000.00..55225874.77 rows=1938562 width=70)--
+--        Join Filter: (s1.countrycode = s2.countrycode)--
+--        ->  Seq Scan on sitio s1  (cost=0.00..19351.64 rows=60656 width=35)--
+--              Filter: ((entidad)::text ~~ 'a%'::text)--
+--        ->  Materialize  (cost=1000.00..19419.73 rows=60656 width=35)--
+--              ->  Gather  (cost=1000.00..19116.45 rows=60656 width=35)--
+--                    Workers Planned: 2--
+--                    ->  Parallel Seq Scan on sitio s2  (cost=0.00..12050.85 rows=25273 width=35)--
+--                          Filter: ((entidad)::text ~~ 'b%'::text)--
+
+
+
+-- CON INDICE
+
+--Limit  (cost=0.85..7.34 rows=100 width=70)--
+--  ->  Merge Join  (cost=0.85..125562.25 rows=1933707 width=70)--
+--        Merge Cond: (s1.countrycode = s2.countrycode)--
+--        ->  Index Scan using sitio_countrycode_idx on sitio s1  (cost=0.42..48202.60 rows=60580 width=35)--
+--              Filter: ((entidad)::text ~~ 'a%'::text)--
+--        ->  Materialize  (cost=0.42..48354.05 rows=60580 width=35)--
+--              ->  Index Scan using sitio_countrycode_idx on sitio s2  (cost=0.42..48202.60 rows=60580 width=35)--
+--                    Filter: ((entidad)::text ~~ 'b%'::text)--
