@@ -35,7 +35,7 @@ class PgDB:
                         SELECT 
                             lower(c.name), 
                             lower(c.district), 
-                            lower(co.code2)
+                            upper(co.code2)
                         FROM 
                             city c
                         JOIN 
@@ -51,20 +51,19 @@ class PgDB:
 
 def find(arr , elem):
     for x in arr:
-        if x[0] != None and elem != None and x[0] == (elem.lower()).strip():
+        if x != None and elem != None and x == (elem.lower()).strip():
             return elem
 
 
 
 def runFilterByCountry(collection, data):
-    dataResult = collection.find({},{"id": 1,"user.location": 1}).limit(5000) ## obtenemos los documentos con user.location
+    dataResult = collection.find({},{"id": 1,"user.location": 1}) ## obtenemos los documentos con user.location
 
     for element in dataResult:
         result = re.split('[,/-]', str(element['user']['location'])) # spliteamos las palabras
         for e in result:
-            res = find(data, e)
+            res = find(data[0], e)
             if res: ## aca buscamos cada documento de la coleccion para ver si existe en la tabla sql
-                print('entro')
                 collection.update_one({'id': element['id']}, {'$set': {'real_location': res}})
 
 
