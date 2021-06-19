@@ -52,7 +52,7 @@ class PgDB:
 
 def find(arr , elem):
     for x in arr:
-        if x[0] != None and elem != None and x[0] == elem.lower():
+        if x[0] != None and elem != None and x[0] == (elem.lower()).strip():
             return elem
 
 
@@ -67,9 +67,11 @@ def runFilterByCountry(collection, data):
         for e in result:
             res = find(data, e)
             if res: ## aca buscamos cada documento de la coleccion para ver si existe en la tabla sql
-                print(res) ## este elemento se agrega como documento a esa id de docu
+                collection.update_one({'id': element['id']}, {'$set': {'real_location': res}})
             else:
                 remanent.append(element) ## agregamos este docua lista de remanencia
+
+    return remanent
 
 
 
@@ -82,8 +84,8 @@ def main():
     dbPg = PgDB('localhost', 'sgbdtest', 'postgres', 'docker')
     cursor = dbPg.getPgCursor()
 
-    data_countys = dbPg.getJoinedData(cursor) ## descargamos todos los registros joineados ya que son pocos, para evitar carga en db
-    runFilterByCountry(collection, data_countys) ## primer etapa de filtrado
+    data_countys = dbPg.getJoinedData(cursor) ## descargamos todos los registros joineados ya que son pocos, para evitar carga en db,  tupla (country name, city name, code2)
+    resultFilter1 = runFilterByCountry(collection, data_countys) ## primer etapa de filtrado
 
 
 
@@ -134,4 +136,62 @@ const allEqual = arr => arr.every(val => val === arr[0]);
 buscar por cuidad, verificar distrito, si cumple clavar code2
 
 
+SELECT 
+    c.name, c.district, co.code2
+FROM 
+	city c
+JOIN 
+	country co
+ON 
+	co.capital=c.id
+WHERE 
+	c.district like 'Distri%'
+
+
 """
+
+
+""" db = MongoDB('localhost', 27017, 'test', 'tweets')
+    collection = db.getMongoCursor()
+
+    result = collection.find(
+            {
+                "user.followers_count": {"$gt":100000}
+            }, 
+            {
+                "id": 1, 
+                "user.id":1,
+                "user.name":1,
+                "user.description":1,
+                "user.followers_count":1,
+                "user.location": 1
+            }
+        )
+
+    print(result[0])
+
+    db = PgDB('localhost', 'sgbdtest', 'postgres', 'docker')
+    cursor = db.getPgCursor()
+
+    cursor.execute
+                        SELECT 
+                            c.name as cuidad, 
+                            co.name as pais,
+                            c.district,
+                            co.code2
+                        FROM 
+                            city c
+                        JOIN 
+                            country co
+                        ON 
+                            co.capital=c.id
+                        WHERE 
+                            lower(c.name) like %s or
+                            lower(co.name) like %s or
+                            lower(c.district) like %s or
+                            upper(co.code2) like %s
+                    
+                    ('','','','SC')
+    )
+
+    print(cursor.fetchall()) """
