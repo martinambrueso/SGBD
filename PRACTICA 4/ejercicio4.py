@@ -33,15 +33,16 @@ class PgDB:
         cur.execute(
                     """
                         SELECT 
-                            lower(c.name), 
-                            lower(c.district), 
-                            upper(co.code2)
+                            lower(co.name) as pais,
+                            lower(c.name) as cuidad, 
+                            lower(c.district) as distrito, 
+                            upper(co.code2) as c_pais
                         FROM 
                             city c
                         JOIN 
                             country co
                         ON 
-                            co.capital=c.id
+                            co.capital = c.id;
                     """
                 )
 
@@ -49,31 +50,37 @@ class PgDB:
 
 
 
-def find(arr , elem):
-    for x in arr:
-        if x[0] != None and elem != None and x[0] == (elem.lower()).strip():
-            return elem
+def find(arr , elem, position):
+    for item in arr:
+        if item[position] != None and elem != None and item[position] == (elem.lower()).strip():
+            return item
             break
 
 
 
-def runFilterByCountry(collection, data):
+def applyCountryRule(collection, data): ## HACER REFACTORING URGENTE DESPUES DE QUE FUNQUE
     dataResult = collection.find({},{"id": 1,"user.location": 1}) ## obtenemos los documentos con user.location
 
     for element in dataResult:
         result = re.split('[,/-]', str(element['user']['location'])) # spliteamos las palabras
         for e in result:
-            res = find(data, e)
+            res = find(data, e, 0) ## tercer parametro es de posicion de la tupla resultante de la consulta sql
             if res: ## aca buscamos cada documento de la coleccion para ver si existe en la tabla sql
-                collection.update_one({'id': element['id']}, {'$set': {'real_location': res}})
+                collection.update_one({'id': element['id']}, {'$set': {'real_location': ((res[0]).lower()).strip()}})
+                break
 
 
 
-def runFilterByState(collection, data):
-    dataResult = collection.find({'real_location': {'$exists':'true'}}) ## se toma remanente en aquellos documentos que no tiene presente el nuevo campo real_location
-    for e in dataResult:
-        print(e)
+def applyStateRule(collection, data): ## HACER REFACTORING URGENTE DESPUES DE QUE FUNQUE
+    dataResult = collection.find({'real_location': {'$exists':False}}) ## se toma remanente en aquellos documentos que no tiene presente el nuevo campo real_location
 
+    for element in dataResult:
+        result = re.split('[,/-]', str(element['user']['location'])) # spliteamos las palabras
+        for e in result:
+            res = find(data, e, 1) ## tercer parametro es de posicion de la tupla resultante de la consulta sql
+            if res: ## aca buscamos cada documento de la coleccion para ver si existe en la tabla sql
+                collection.update_one({'id': element['id']}, {'$set': {'real_location': ((res[3]).lower()).strip()}})
+                break
 
 
 def main():
@@ -86,8 +93,8 @@ def main():
     cursor = dbPg.getPgCursor()
 
     data_countys = dbPg.getJoinedData(cursor) ## descargamos todos los registros joineados ya que son pocos, para evitar carga en db,  tupla (country name, city name, code2)
-    resultFilter1 = runFilterByCountry(collection, data_countys) ## primer etapa de filtrado
-    #resultFilter2 = runFilterByState(collection, data_countys) ## segunda etapa de filtrado
+    #applyCountryRule(collection, data_countys) ## primer etapa de filtrado
+    applyStateRule(collection, data_countys) ## segunda etapa de filtrado
 
 
 
