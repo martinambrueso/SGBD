@@ -46,7 +46,9 @@ db.total_por_lang.find();
 -- Mediano >= 10 -  < 20 palabras
 -- Largo >= 20 palagras
 var map = function() { 
-    var words = this.text.split(" ");
+    var textReplace = this.text.replace("/[^0-9a-zA-Z]/g", "");
+    var words = textReplace.split(" ");
+
     var cantidadPalabras = words.length
     var key = ""
     if (cantidadPalabras < 10) {
