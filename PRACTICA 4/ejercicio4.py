@@ -52,35 +52,23 @@ class PgDB:
 
 def find(arr , elem, position):
     for item in arr:
-        if item[position] != None and elem != None and item[position] == (elem.lower()).strip():
+        if item[position] != None and elem != None and len(re.findall(item[position], (elem.lower()).strip())) != 0:
             return item
             break
 
 
 
-def applyCountryRule(collection, data): ## HACER REFACTORING URGENTE DESPUES DE QUE FUNQUE
-    dataResult = collection.find({},{"id": 1,"user.location": 1}) ## obtenemos los documentos con user.location
+def applyRule(collection, condition, projection, data, position):
+    dataResult = collection.find(condition, projection)
 
     for element in dataResult:
         result = re.split('[,/-]', str(element['user']['location'])) # spliteamos las palabras
         for e in result:
-            res = find(data, e, 0) ## tercer parametro es de posicion de la tupla resultante de la consulta sql
-            if res: ## aca buscamos cada documento de la coleccion para ver si existe en la tabla sql
-                collection.update_one({'id': element['id']}, {'$set': {'real_location': ((res[0]).lower()).strip()}})
+            res = find(data, e, position) ## tercer parametro es de posicion de la tupla resultante de la consulta sql
+            if res:
+                collection.update_one({'id': element['id']}, {'$set': {'real_location': ((res[position]).lower()).strip()}})
                 break
 
-
-
-def applyStateRule(collection, data): ## HACER REFACTORING URGENTE DESPUES DE QUE FUNQUE
-    dataResult = collection.find({'real_location': {'$exists':False}}) ## se toma remanente en aquellos documentos que no tiene presente el nuevo campo real_location
-
-    for element in dataResult:
-        result = re.split('[,/-]', str(element['user']['location'])) # spliteamos las palabras
-        for e in result:
-            res = find(data, e, 1) ## tercer parametro es de posicion de la tupla resultante de la consulta sql
-            if res: ## aca buscamos cada documento de la coleccion para ver si existe en la tabla sql
-                collection.update_one({'id': element['id']}, {'$set': {'real_location': ((res[3]).lower()).strip()}})
-                break
 
 
 def main():
@@ -93,10 +81,20 @@ def main():
     cursor = dbPg.getPgCursor()
 
     data_countys = dbPg.getJoinedData(cursor) ## descargamos todos los registros joineados ya que son pocos, para evitar carga en db,  tupla (country name, city name, code2)
-    #applyCountryRule(collection, data_countys) ## primer etapa de filtrado
-    applyStateRule(collection, data_countys) ## segunda etapa de filtrado
+    
+    ## applyRule (collection, filterQuery, projectionQuery, tuplaResultSQL, pisicion_tupla(pais, cuidad, distrito, c_pais))
+    applyRule(collection, None, {"id": 1,"user.location": 1}, data_countys, 0)
+    applyRule(collection, {'real_location': {'$exists':False}}, None, data_countys, 1)
+    applyRule(collection, {'real_location': {'$exists':False}}, {}, data_countys, 3)
 
 
 
 if __name__ == "__main__":
     main()
+
+
+
+## AGREGAR CASO NULL Y Ciudad Autónoma de Buenos Aire
+## > db.tweets.find({'user.location': null},{}).count()   48169
+## una capa mas podria ser regla por codigo - Houston, TX
+## New York, USA
