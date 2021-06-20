@@ -53,12 +53,12 @@ def generarMapa(dbPg):
     mapaPaises = {}
     for pais,ciudad,distrito,c_pais in dbPg:
         if ciudad.lower() not in mapaPaises:
-            mapaPaises[ciudad.lower()] = c_pais.lower()
+            mapaPaises[ciudad.lower()] = c_pais
         if distrito.lower() not in mapaPaises:
-            mapaPaises[distrito.lower()] = c_pais.lower()
+            mapaPaises[distrito.lower()] = c_pais
         if pais.lower() not in mapaPaises:
-            mapaPaises[pais.lower()] = c_pais.lower()
-    mapaPaises["spain"] = "es"
+            mapaPaises[pais.lower()] = c_pais
+    mapaPaises["spain"] = "ESP"
     return mapaPaises
 
 def applyStateRule(collection, mapaPaises): ## HACER REFACTORING URGENTE DESPUES DE QUE FUNQUE
