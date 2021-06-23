@@ -13,7 +13,7 @@ password = 'docker'
 database = 'test'
 
 def generate_graph(collection, sw):
-    stop_words = get_stop_words('en')
+    stop_words = get_stop_words(sw)
 
     rs = collection.find().sort('value', -1).limit(20)
 
