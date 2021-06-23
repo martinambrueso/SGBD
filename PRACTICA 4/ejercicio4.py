@@ -36,65 +36,67 @@ class PgDB:
                             lower(co.name) as pais,
                             lower(c.name) as cuidad, 
                             lower(c.district) as distrito, 
-                            upper(co.code2) as c_pais
+                            upper(co.code) as c_pais
                         FROM 
                             city c
                         JOIN 
                             country co
                         ON 
-                            co.capital = c.id;
+                            co.code = c.countrycode;
                     """
                 )
 
         return cur.fetchall()
 
 
+def generarMapa(dbPg):
+    mapaPaises = {}
+    for pais,ciudad,distrito,c_pais in dbPg:
+        if ciudad.lower() not in mapaPaises:
+            mapaPaises[ciudad.lower()] = c_pais
+        if distrito.lower() not in mapaPaises:
+            mapaPaises[distrito.lower()] = c_pais
+        if pais.lower() not in mapaPaises:
+            mapaPaises[pais.lower()] = c_pais
+    mapaPaises["spain"] = "ESP"
+    return mapaPaises
 
-def find(arr , elem, position):
-    for item in arr:
-        if item[position] != None and elem != None and len(re.findall(item[position], (elem.lower()).strip())) != 0:
-            return item
-            break
-
-
-
-def applyRule(collection, condition, projection, data, position):
-    dataResult = collection.find(condition, projection)
+def applyStateRule(collection, mapaPaises): ## HACER REFACTORING URGENTE DESPUES DE QUE FUNQUE
+    dataResult = collection.find({'real_location': {'$exists':False}}) ## se toma remanente en aquellos documentos que no tiene presente el nuevo campo real_location
 
     for element in dataResult:
-        result = re.split('[,/-]', str(element['user']['location'])) # spliteamos las palabras
+        update = False
+        userLocation = str(element['user']['location']).lower()
+        result = re.split('[,/-]', userLocation) # spliteamos las palabras
         for e in result:
-            res = find(data, e, position) ## tercer parametro es de posicion de la tupla resultante de la consulta sql
-            if res:
-                collection.update_one({'id': element['id']}, {'$set': {'real_location': ((res[position]).lower()).strip()}})
+            #print(e)
+            if e in mapaPaises:
+                res = mapaPaises[e]
+                collection.update_one({'id': element['id']}, {'$set': {'real_location': res}})
+                update = True
                 break
+        if not update and userLocation.replace(" ", "") in mapaPaises: #Si no se actualiza con el for de antes, proobamos sacando los espacios ya que hay casos de ' Argentina'
+            res = mapaPaises[userLocation.replace(" ", "")]
+            collection.update_one({'id': element['id']}, {'$set': {'real_location': res}})
+            update = True
 
-
-
+        if not update:
+            print(userLocation)
+            
 def main():
     ## Cursos mongo
     dbMongo = MongoDB('localhost', 27017, 'test', 'tweets')
     collection = dbMongo.getMongoCollection()
 
     ## Cursor psql
-    dbPg = PgDB('localhost', 'sgbdtest', 'postgres', 'docker')
+    dbPg = PgDB('localhost', 'world', 'postgres', 'admin')
     cursor = dbPg.getPgCursor()
 
     data_countys = dbPg.getJoinedData(cursor) ## descargamos todos los registros joineados ya que son pocos, para evitar carga en db,  tupla (country name, city name, code2)
-    
-    ## applyRule (collection, filterQuery, projectionQuery, tuplaResultSQL, pisicion_tupla(pais, cuidad, distrito, c_pais))
-    applyRule(collection, None, {"id": 1,"user.location": 1}, data_countys, 0)
-    applyRule(collection, {'real_location': {'$exists':False}}, None, data_countys, 1)
-    applyRule(collection, {'real_location': {'$exists':False}}, {}, data_countys, 3)
+    mapaPaises = generarMapa(data_countys)
+    applyStateRule(collection, mapaPaises) ## segunda etapa de filtrado
 
 
 
 if __name__ == "__main__":
     main()
-
-
-
-## AGREGAR CASO NULL Y Ciudad Autónoma de Buenos Aire
-## > db.tweets.find({'user.location': null},{}).count()   48169
-## una capa mas podria ser regla por codigo - Houston, TX
-## New York, USA
