@@ -89,7 +89,7 @@ def main():
     collection = dbMongo.getMongoCollection()
 
     ## Cursor psql
-    dbPg = PgDB('localhost', 'world', 'postgres', 'admin')
+    dbPg = PgDB('localhost', 'sgbdtest', 'postgres', 'docker')
     cursor = dbPg.getPgCursor()
 
     data_countys = dbPg.getJoinedData(cursor) ## descargamos todos los registros joineados ya que son pocos, para evitar carga en db,  tupla (country name, city name, code2)
