@@ -61,7 +61,7 @@ def generarMapa(dbPg):
     mapaPaises["spain"] = "ESP"
     return mapaPaises
 
-def applyStateRule(collection, mapaPaises): ## HACER REFACTORING URGENTE DESPUES DE QUE FUNQUE
+def aplicarReglas(collection, mapaPaises): ## HACER REFACTORING URGENTE DESPUES DE QUE FUNQUE
     dataResult = collection.find({'real_location': {'$exists':False}}) ## se toma remanente en aquellos documentos que no tiene presente el nuevo campo real_location
 
     for element in dataResult:
@@ -94,7 +94,7 @@ def main():
 
     data_countys = dbPg.getJoinedData(cursor) ## descargamos todos los registros joineados ya que son pocos, para evitar carga en db,  tupla (country name, city name, code2)
     mapaPaises = generarMapa(data_countys)
-    applyStateRule(collection, mapaPaises) ## segunda etapa de filtrado
+    aplicarReglas(collection, mapaPaises) ## segunda etapa de filtrado
 
 
 
