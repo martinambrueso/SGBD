@@ -12,7 +12,7 @@ password = 'docker'
 #database = 'sgbd'
 database = 'test'
 
-def generate_graph(collection, sw):
+def generar_grafico(collection, sw):
     stop_words = get_stop_words(sw)
 
     rs = collection.find().sort('value', -1).limit(20)
@@ -43,8 +43,8 @@ def main():
     collectionARG = db['word_count_arg']
     collectionUSA = db['word_count_usa']
     
-    generate_graph(collectionARG, 'spanish')
-    generate_graph(collectionUSA, 'english')
+    generar_grafico(collectionARG, 'spanish')
+    generar_grafico(collectionUSA, 'english')
 
 
 
