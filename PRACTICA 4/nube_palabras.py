@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import pymongo
 from stop_words import get_stop_words
-from collections import Counter
 
 hostname = '192.168.1.22'
 username = 'postgres'
@@ -12,20 +11,35 @@ password = 'docker'
 #database = 'sgbd'
 database = 'test'
 
-def generar_grafico(collection, sw):
-    stop_words = get_stop_words(sw)
 
-    rs = collection.find().sort('value', -1).limit(20)
+def limpiar_colleccion(sw, dict):
+    newDict = {}
+
+    for elem in dict:
+        if elem not in sw:
+            newDict[elem] = dict[elem]
+
+    return newDict
+
+
+def generar_grafico(collection, sw):
+    rs = collection.find().sort('value', -1)
 
     dictionary = {}
     for elem in rs:
         dictionary[elem['_id']] = elem['value']
 
+    print(len(dictionary))
+
+    dictResult = limpiar_colleccion(sw, dictionary)
+
+    print(len(dictResult))
+
+    newDict = {A:N for (A,N) in [x for x in dictResult.items()][:20]}
 
     wc = WordCloud(width = 800, height = 800,
                     background_color ='white',
-                    stopwords = stop_words,
-                    min_font_size = 10).generate_from_frequencies(dictionary)
+                    min_font_size = 10).generate_from_frequencies(newDict)
   
     # plot the WordCloud image                       
     plt.figure(figsize = (8, 8), facecolor = None)
@@ -43,8 +57,14 @@ def main():
     collectionARG = db['word_count_arg']
     collectionUSA = db['word_count_usa']
     
-    generar_grafico(collectionARG, 'spanish')
-    generar_grafico(collectionUSA, 'english')
+    with open('stop_words_spanish.txt', 'r', encoding='utf-8') as file:
+        swSpanish = file.read().split(',')
+
+    with open('stop_words_english.txt', 'r', encoding='utf-8') as file:
+        swEnglish = file.read().split(',')
+
+    generar_grafico(collectionARG, swSpanish)
+    generar_grafico(collectionUSA, swEnglish)
 
 
 
