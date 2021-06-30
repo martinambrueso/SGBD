@@ -64,10 +64,10 @@ def main():
     collectionUSA = db['word_count_usa']
     
     with open('stop_words_spanish.txt', 'r', encoding='utf-8') as file:
-        swSpanish = re.sub('[@$%&;]', '', file.read()).split(',')
+        swSpanish = file.read().split(',')
 
     with open('stop_words_english.txt', 'r', encoding='utf-8') as file:
-        swEnglish = re.sub('[@$%&;]', '', file.read()).split(',')
+        swEnglish = file.read().split(',')
 
     generar_grafico(collectionARG, swSpanish)
     generar_grafico(collectionUSA, swEnglish)
