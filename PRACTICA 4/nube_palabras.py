@@ -1,8 +1,12 @@
+from PIL.Image import new
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 import pandas as pd
 import pymongo
 from stop_words import get_stop_words
+import string
+import re
+
 
 hostname = '192.168.1.22'
 username = 'postgres'
@@ -16,7 +20,8 @@ def limpiar_colleccion(sw, dict):
     newDict = {}
 
     for elem in dict:
-        if elem not in sw:
+        e = re.sub(r'[^\w\s]','',elem)
+        if e not in sw:
             newDict[elem] = dict[elem]
 
     return newDict
@@ -36,6 +41,7 @@ def generar_grafico(collection, sw):
     print(len(dictResult))
 
     newDict = {A:N for (A,N) in [x for x in dictResult.items()][:20]}
+    print(newDict)
 
     wc = WordCloud(width = 800, height = 800,
                     background_color ='white',
@@ -58,10 +64,10 @@ def main():
     collectionUSA = db['word_count_usa']
     
     with open('stop_words_spanish.txt', 'r', encoding='utf-8') as file:
-        swSpanish = file.read().split(',')
+        swSpanish = re.sub('[@$%&;]', '', file.read()).split(',')
 
     with open('stop_words_english.txt', 'r', encoding='utf-8') as file:
-        swEnglish = file.read().split(',')
+        swEnglish = re.sub('[@$%&;]', '', file.read()).split(',')
 
     generar_grafico(collectionARG, swSpanish)
     generar_grafico(collectionUSA, swEnglish)
