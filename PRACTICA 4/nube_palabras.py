@@ -102,4 +102,7 @@ var reduce = function( key, values ) {
 }
 
 db.tweets.mapReduce(map, reduce, {query: {'real_location': 'ARG'}, out: "word_count_arg"})
+
+KNN, ARBOL DE DESICION, BAYES, REDES NEURONALES,
+
 """
